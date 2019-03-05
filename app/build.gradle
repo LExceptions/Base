@@ -1,0 +1,129 @@
+apply plugin: 'com.android.application'
+
+// bintray
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+//        applicationId "com.exception.base"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 1
+        versionName "0.0.1"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
+
+// 项目版本号
+def version = "1.0.1"
+// 唯一包名
+def group = "com.exception"
+
+// 项目主页
+def siteUrl = 'https://github.com/LExceptions/Base'
+// Git仓库的url
+def gitUrl = 'https://github.com/LExceptions/Base.git'
+
+install {
+    repositories.mavenInstaller {
+        // 生成pom.xml和参数
+        pom {
+            project {
+                // 项目描述
+                packaging 'base'
+                // 项目名称
+                name 'Base For Android'
+                // 项目描述
+                description 'The Android Base Util.'
+                // 项目主页
+                url siteUrl
+
+                // 软件开源协议 Apache License2.0
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                //填写开发者基本信息
+                developers {
+                    developer {
+                        // 开发者的id
+                        id 'exceptions'
+                        // 开发者名字
+                        name 'exceptions'
+                        // 开发者邮箱
+                        email 'nullpointexception@vip.qq.com'
+                    }
+                }
+
+                // SCM
+                scm {
+                    // Git仓库地址
+                    connection gitUrl
+                    // Git仓库地址
+                    developerConnection gitUrl
+                    // 项目主页
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+
+// 生成jar包的task。
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+// 生成jarDoc的task。
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    // destinationDir = file("../javadoc/")
+    failOnError false // 忽略注释语法错误，如果用jdk1.8你的注释写的不规范就编译不过。
+}
+// 生成javaDoc的jar。
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+// 读取Bintray相关的信息。
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+bintray {
+    user = properties.getProperty("bintray.user") // Bintray的用户名。
+    key = properties.getProperty("bintray.apikey") // Bintray刚才保存的ApiKey。
+
+    configurations = ['archives']
+    pkg {
+        // bintray仓库名字
+        repo = "base"
+        // Bintray的项目名字
+        name = "base"
+        // Bintray的用户名
+        userOrg = 'bintray_user'
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = ["Apache-2.0"]
+        // 是否是公开项目
+        publish = true
+    }
+}
